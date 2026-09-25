@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Tab Peek
-// @description    In the collapsed sidebar, hovering a tab unfolds it into a pill with its title; split views and folders unfold as a whole.
+// @description    In the collapsed sidebar, hovering a tab unfolds it into a pill with its title (the tab itself stays visible); split views and folders unfold as a whole.
 // @include        main
 // ==/UserScript==
 
@@ -36,25 +36,17 @@
     r.style.marginTop = gap + 'px';
     r.toggleAttribute('selected', tab.selected);
 
-    // The icon part lets the pointer through, so clicks, drags and the context menu reach the real tab.
+    // The icon part is see-through and lets the pointer through: the real tab, with Zen's own
+    // close button, stays visible and clickable underneath.
     const icon = make('div', 'peek-icon');
     icon.style.width = iconWidth + 'px';
-    const img = make('img');
-    img.src = tab.getAttribute('image') || 'chrome://global/skin/icons/defaultFavicon.svg';
-    icon.append(img);
 
     const label = make('span', 'peek-label');
     label.textContent = tab.label;
-    const close = make('button', 'peek-close');
-    close.title = 'Close tab';
-
     label.addEventListener('click', () => { gBrowser.selectedTab = tab; });
-    close.addEventListener('click', () => gBrowser.removeTab(tab, { animate: true }));
-    for (const part of [label, close]) {
-      part.addEventListener('auxclick', (e) => { if (e.button === 1) gBrowser.removeTab(tab, { animate: true }); });
-      part.addEventListener('contextmenu', (e) => e.preventDefault());
-    }
-    r.append(icon, label, close);
+    label.addEventListener('auxclick', (e) => { if (e.button === 1) gBrowser.removeTab(tab, { animate: true }); });
+    label.addEventListener('contextmenu', (e) => e.preventDefault());
+    r.append(icon, label);
     return r;
   }
 
@@ -74,6 +66,7 @@
       return r;
     }));
     peek.classList.toggle('group', tabs.length > 1);
+    peek.style.setProperty('--peek-icon', iconWidth + 'px');
 
     const wasOpen = !peek.hidden && !peek.classList.contains('closing');
     const from = wasOpen ? peek.getBoundingClientRect().width : iconWidth;

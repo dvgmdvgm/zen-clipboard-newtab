@@ -13,9 +13,12 @@
   &[hidden] { display: none; }
   &.closing { opacity: 0; }
 
+  /* The pill's fill starts after the icon column, so the real tab shows through there. */
+  --peek-fill: linear-gradient(to right, transparent var(--peek-icon), var(--zen-colors-tertiary, #202024) var(--peek-icon));
+
   /* A split view or folder unfolds as one framed box. */
   &.group {
-    background: var(--zen-colors-tertiary, #202024);
+    background: var(--peek-fill);
     border: 1.5px solid var(--zen-primary-color, #f4b77a);
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
@@ -31,7 +34,7 @@
   white-space: nowrap;
 
   #zen-tab-peek:not(.group) & {
-    background: var(--zen-colors-tertiary, #202024);
+    background: var(--peek-fill);
     border: 1.5px solid color-mix(in srgb, var(--zen-primary-color, #f4b77a) 55%, transparent);
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
@@ -46,8 +49,6 @@
   align-items: center;
   justify-content: center;
   align-self: stretch;
-
-  & img { width: 16px; height: 16px; }
 }
 
 .peek-label {
@@ -57,23 +58,6 @@
   max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 6px 0 2px;
+  padding: 0 12px 0 6px;
   font-size: 13px;
-}
-
-.peek-close {
-  pointer-events: auto;
-  appearance: none;
-  flex: none;
-  width: 24px;
-  height: 24px;
-  margin: 0 6px 0 0;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  background: currentColor;
-  opacity: .7;
-  mask: url("chrome://global/skin/icons/close.svg") center / 14px no-repeat;
-
-  &:hover { opacity: 1; }
 }

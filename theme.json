@@ -2,7 +2,7 @@
   "id": "zen-clipboard-newtab",
   "name": "Tab Tweaks",
   "description": "Right-click the new tab button to open the clipboard in a new tab; double-click any tab to close it; in the collapsed sidebar, hovering a tab unfolds its title (split views and folders unfold whole). Each can be turned on or off in the mod settings.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "dvgmdvgm",
   "tags": [
     "tabs",

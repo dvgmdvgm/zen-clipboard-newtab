@@ -4,7 +4,7 @@ Three tab tweaks, each with its own on/off switch in the mod settings (Sine → 
 
 - **Right-click the new tab button** → a new tab opens with the clipboard: a URL opens directly, other text is searched with your default engine (the private-window engine in private windows). Empty clipboard or Shift+right-click shows the usual menu.
 - **Double-click any tab** → it closes (active or not). The close, audio and icon buttons keep their own behaviour. While this is on, Zen's rename-on-double-click is replaced; rename from the tab context menu instead.
-- **Collapsed sidebar: hover a tab** → it unfolds into a pill with its title. A split view or a folder unfolds as a whole. Click a title to switch to that tab, middle-click or ✕ to close it. The icon part stays the real tab, so dragging and its right-click menu work as usual.
+- **Collapsed sidebar: hover a tab** → it unfolds into a pill with its title. A split view or a folder unfolds as a whole. Click a title to switch to that tab, middle-click it to close. The icon part is see-through: the real tab with Zen's own close button stays visible and clickable, and dragging and its right-click menu work as usual.
 
 Works with `#tabs-newtab-button`, `#vertical-tabs-newtab-button` and `#new-tab-button` (Zen 1.22).
 
