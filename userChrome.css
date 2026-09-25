@@ -1,0 +1,79 @@
+/* Tab Peek: the pill that unfolds from a tab in the collapsed sidebar. */
+#zen-tab-peek {
+  position: fixed;
+  z-index: 10000;
+  max-width: 340px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 1;
+  transition: width .2s cubic-bezier(.2, .9, .3, 1), top .14s ease, opacity .16s ease;
+  font: menu;
+  color: var(--toolbox-textcolor, #ececf0);
+
+  &[hidden] { display: none; }
+  &.closing { opacity: 0; }
+
+  /* A split view or folder unfolds as one framed box. */
+  &.group {
+    background: var(--zen-colors-tertiary, #202024);
+    border: 1.5px solid var(--zen-primary-color, #f4b77a);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+    box-sizing: border-box;
+  }
+}
+
+.peek-row {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  pointer-events: none;
+  white-space: nowrap;
+
+  #zen-tab-peek:not(.group) & {
+    background: var(--zen-colors-tertiary, #202024);
+    border: 1.5px solid color-mix(in srgb, var(--zen-primary-color, #f4b77a) 55%, transparent);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+  }
+  #zen-tab-peek:not(.group) &[selected] { border-color: var(--zen-primary-color, #f4b77a); }
+  #zen-tab-peek.group &[selected] .peek-label { color: var(--zen-primary-color, #f4b77a); }
+}
+
+.peek-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+
+  & img { width: 16px; height: 16px; }
+}
+
+.peek-label {
+  pointer-events: auto;
+  flex: 1;
+  min-width: 0;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 6px 0 2px;
+  font-size: 13px;
+}
+
+.peek-close {
+  pointer-events: auto;
+  appearance: none;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0 6px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: currentColor;
+  opacity: .7;
+  mask: url("chrome://global/skin/icons/close.svg") center / 14px no-repeat;
+
+  &:hover { opacity: 1; }
+}

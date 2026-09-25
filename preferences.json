@@ -10,5 +10,11 @@
     "property": "zen-clipboard-newtab.dblclick-close",
     "label": "Double-click any tab to close it",
     "defaultValue": true
+  },
+  {
+    "type": "checkbox",
+    "property": "zen-clipboard-newtab.tab-peek",
+    "label": "Collapsed sidebar: unfold the hovered tab to show its title",
+    "defaultValue": true
   }
 ]
