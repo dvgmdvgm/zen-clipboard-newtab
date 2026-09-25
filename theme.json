@@ -1,8 +1,8 @@
 {
   "id": "zen-clipboard-newtab",
   "name": "Tab Tweaks",
-  "description": "Right-click the new tab button to open the clipboard in a new tab; double-click any tab to close it; in the collapsed sidebar, hovering a tab slides its title out beside it in the tab's own style (split views and folders slide out whole). Each can be turned on or off in the mod settings.",
-  "version": "1.3.0",
+  "description": "Right-click the new tab button to open the clipboard in a new tab; double-click any tab to close it; in the collapsed sidebar, hovering a tab slides its title out beside it in the tab's own style (split views and folders slide out whole); press and hold the reload button for normal reload, hard reload, or empty cache and hard reload. Each can be turned on or off in the mod settings.",
+  "version": "1.4.0",
   "author": "dvgmdvgm",
   "tags": [
     "tabs",
@@ -23,6 +23,13 @@
     "JS/tab-peek.uc.js": {
       "name": "Tab Peek",
       "description": "Slides the hovered tab title out in the collapsed sidebar, styled like the tab.",
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ]
+    },
+    "JS/reload-menu.uc.js": {
+      "name": "Reload Menu",
+      "description": "Press and hold the reload button: normal reload, hard reload, empty cache and hard reload.",
       "include": [
         "chrome://browser/content/browser.xhtml"
       ]

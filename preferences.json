@@ -16,5 +16,11 @@
     "property": "zen-clipboard-newtab.tab-peek",
     "label": "Collapsed sidebar: unfold the hovered tab to show its title",
     "defaultValue": true
+  },
+  {
+    "type": "checkbox",
+    "property": "zen-clipboard-newtab.reload-menu",
+    "label": "Press and hold the reload button for more reload options",
+    "defaultValue": true
   }
 ]
