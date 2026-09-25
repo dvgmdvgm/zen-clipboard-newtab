@@ -1,0 +1,14 @@
+[
+  {
+    "type": "checkbox",
+    "property": "zen-clipboard-newtab.rmb-paste",
+    "label": "Right-click the new tab button to open the clipboard in a new tab",
+    "defaultValue": true
+  },
+  {
+    "type": "checkbox",
+    "property": "zen-clipboard-newtab.dblclick-close",
+    "label": "Double-click any tab to close it",
+    "defaultValue": true
+  }
+]

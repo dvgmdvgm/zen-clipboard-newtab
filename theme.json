@@ -1,16 +1,24 @@
 {
   "id": "zen-clipboard-newtab",
-  "name": "Clipboard New Tab",
-  "description": "Right-click the new tab button to open the clipboard in a new tab: a URL opens, other text is searched with your default engine. Shift+right-click shows the usual menu.",
-  "version": "1.0.0",
+  "name": "Tab Clicks",
+  "description": "Right-click the new tab button to open the clipboard in a new tab (URL or search); double-click any tab to close it. Each can be turned on or off in the mod settings.",
+  "version": "1.1.0",
   "author": "dvgmdvgm",
-  "tags": ["tabs", "clipboard", "JS"],
-  "fork": ["zen"],
+  "tags": [
+    "tabs",
+    "clipboard",
+    "JS"
+  ],
+  "fork": [
+    "zen"
+  ],
   "scripts": {
     "JS/clipboard-newtab.uc.js": {
-      "name": "Clipboard New Tab",
-      "description": "Opens the clipboard text in a new tab on right-click of the new tab button.",
-      "include": ["chrome://browser/content/browser.xhtml"]
+      "name": "Tab Clicks",
+      "description": "Clipboard new tab on right-click, close tab on double-click.",
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ]
     }
   }
 }

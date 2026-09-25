@@ -1,4 +1,4 @@
-# Installs the Clipboard New Tab mod into every Zen profile that has Sine.
+# Installs the Tab Clicks mod into every Zen profile that has Sine.
 # Close Zen first: Sine rewrites mods.json while the browser runs.
 $ErrorActionPreference = 'Stop'
 if (Get-Process zen -ErrorAction SilentlyContinue) { Write-Host 'Close Zen Browser first, then run this again.'; exit 1 }
@@ -17,7 +17,7 @@ foreach ($p in $profiles) {
   if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
   New-Item -ItemType Directory $dest | Out-Null
   Copy-Item (Join-Path $src 'JS') $dest -Recurse
-  Copy-Item (Join-Path $src 'theme.json') $dest
+  Copy-Item (Join-Path $src 'theme.json'), (Join-Path $src 'preferences.json') $dest
 
   $file = Join-Path $mods 'mods.json'
   Copy-Item $file "$file.bak" -Force
@@ -25,7 +25,7 @@ foreach ($p in $profiles) {
   $entry = [ordered]@{
     id = $id; name = $meta.name; description = $meta.description; version = $meta.version; author = $meta.author
     tags = $meta.tags; fork = $meta.fork; scripts = $meta.scripts
-    style = [ordered]@{ chrome = ''; content = '' }; preferences = ''
+    style = [ordered]@{ chrome = ''; content = '' }; preferences = 'preferences.json'
     'no-updates' = $true; enabled = $true
   }
   $list | Add-Member -NotePropertyName $id -NotePropertyValue ([pscustomobject]$entry) -Force
