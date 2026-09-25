@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Tab Peek
-// @description    In the collapsed sidebar, hovering a tab unfolds it into a pill with its title (the tab itself stays visible); split views and folders unfold as a whole.
+// @description    In the collapsed sidebar, hovering a tab slides its title out beside it, styled like the tab itself; split views and folders slide out whole.
 // @include        main
 // ==/UserScript==
 
@@ -9,6 +9,7 @@
   window.__zenTabPeek = true;
 
   const HTML = 'http://www.w3.org/1999/xhtml';
+  const GAP = 6; // space between the tab and its pill, so Zen's own tab decorations stay untouched
   const enabled = () => Services.prefs.getBoolPref('zen-clipboard-newtab.tab-peek', true);
   const collapsed = () => document.documentElement.getAttribute('zen-sidebar-expanded') !== 'true';
   const make = (tag, cls) => {
@@ -22,64 +23,140 @@
   peek.hidden = true;
   document.documentElement.append(peek);
 
+  // ---- Reading the theme off the live tab ----
+
+  // Canvas normalises any CSS color the engine knows into #rrggbb or rgba(...).
+  const ctx = make('canvas').getContext('2d');
+  function rgba(color) {
+    ctx.fillStyle = '#00000000';
+    ctx.fillStyle = color;
+    const v = ctx.fillStyle;
+    if (v[0] === '#') return [1, 3, 5].map((i) => parseInt(v.slice(i, i + 2), 16)).concat(1);
+    const n = v.match(/[\d.]+/g)?.map(Number);
+    return n?.length === 4 ? n : [0, 0, 0, 0];
+  }
+
+  // Theme base for fully transparent sidebars: resolve the theme's own surface color, else follow light/dark.
+  function themeBase() {
+    const probe = make('div');
+    probe.style.cssText = 'position:fixed;visibility:hidden;background-color:var(--zen-colors-tertiary, var(--toolbar-bgcolor))';
+    document.documentElement.append(probe);
+    const c = rgba(getComputedStyle(probe).backgroundColor);
+    probe.remove();
+    if (c[3] > 0.5) return [c[0], c[1], c[2], 1];
+    return matchMedia('(prefers-color-scheme: dark)').matches ? [31, 31, 35, 1] : [245, 245, 247, 1];
+  }
+
+  // The pill floats over web content, so it needs a solid fill: stack the tab's (often translucent)
+  // background over its ancestors' until the result is opaque.
+  function solidBackground(el) {
+    const layers = [];
+    for (let e = el; e; e = e.parentElement) {
+      const c = rgba(getComputedStyle(e).backgroundColor);
+      if (c[3] > 0) layers.push(c);
+      if (c[3] >= 0.99) break;
+    }
+    if (!layers.length || layers.at(-1)[3] < 0.99) layers.push(themeBase());
+    let [r, g, b] = layers.pop();
+    for (const [lr, lg, lb, a] of layers.reverse()) {
+      r = lr * a + r * (1 - a); g = lg * a + g * (1 - a); b = lb * a + b * (1 - a);
+    }
+    return [r, g, b].map(Math.round);
+  }
+
+  // WCAG contrast ratio between two [r, g, b] colors.
+  function contrast(a, b) {
+    const lum = ([r, g, b]) => {
+      const f = (c) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  // Keep the theme's text color; if the stacked fill doesn't read with it, fall back to the theme
+  // surface, and only as a last resort pick black or white text.
+  function readable(bg, text) {
+    const fg = rgba(text).slice(0, 3);
+    if (contrast(bg, fg) >= 3) return [bg, text];
+    const base = themeBase().slice(0, 3);
+    if (contrast(base, fg) >= 3) return [base, text];
+    return [bg, contrast(bg, [0, 0, 0]) > contrast(bg, [255, 255, 255]) ? '#000' : '#fff'];
+  }
+  const css = ([r, g, b]) => `rgb(${r}, ${g}, ${b})`;
+
+  function lookOf(tab) {
+    const bg = tab.querySelector('.tab-background') || tab;
+    const s = getComputedStyle(bg);
+    const label = getComputedStyle(tab.querySelector('.tab-label') || tab);
+    const visible = (style, width, color) => style !== 'none' && parseFloat(width) > 0 && rgba(color)[3] > 0;
+    let border = `1px solid color-mix(in srgb, ${label.color} 22%, transparent)`;
+    if (visible(s.borderTopStyle, s.borderTopWidth, s.borderTopColor)) border = `${s.borderTopWidth} solid ${s.borderTopColor}`;
+    else if (visible(s.outlineStyle, s.outlineWidth, s.outlineColor)) border = `${s.outlineWidth} solid ${s.outlineColor}`;
+    const [fill, color] = readable(solidBackground(bg), label.color);
+    return {
+      rect: bg.getBoundingClientRect(),
+      css: {
+        background: css(fill),
+        border,
+        borderRadius: s.borderRadius,
+        boxShadow: (s.boxShadow !== 'none' ? s.boxShadow + ', ' : '') + '0 6px 18px rgba(0, 0, 0, .28)',
+        color,
+        fontFamily: label.fontFamily,
+        fontSize: label.fontSize,
+        fontWeight: label.fontWeight,
+      },
+    };
+  }
+
+  // ---- The pill ----
+
   let shown = [], hideTimer = 0;
 
-  // A split view or a folder unfolds as a whole; collapsed folder children have no height and are skipped.
+  // A split view or a folder slides out whole; collapsed folder children have no height and are skipped.
   function tabsFor(tab) {
     const list = (tab.group?.tabs || []).filter((t) => !t.hidden && t.getBoundingClientRect().height > 0);
     return list.length ? list : [tab];
   }
 
-  function row(tab, rect, gap, iconWidth) {
+  function row(tab, look, gap) {
     const r = make('div', 'peek-row');
-    r.style.height = rect.height + 'px';
-    r.style.marginTop = gap + 'px';
-    r.toggleAttribute('selected', tab.selected);
-
-    // The icon part is see-through and lets the pointer through: the real tab, with Zen's own
-    // close button, stays visible and clickable underneath.
-    const icon = make('div', 'peek-icon');
-    icon.style.width = iconWidth + 'px';
-
-    const label = make('span', 'peek-label');
-    label.textContent = tab.label;
-    label.addEventListener('click', () => { gBrowser.selectedTab = tab; });
-    label.addEventListener('auxclick', (e) => { if (e.button === 1) gBrowser.removeTab(tab, { animate: true }); });
-    label.addEventListener('contextmenu', (e) => e.preventDefault());
-    r.append(icon, label);
+    Object.assign(r.style, look.css, { height: look.rect.height + 'px', marginTop: gap + 'px' });
+    const text = make('span', 'peek-text');
+    text.textContent = tab.label;
+    r.append(text);
+    r.addEventListener('click', () => { gBrowser.selectedTab = tab; });
+    r.addEventListener('auxclick', (e) => { if (e.button === 1) gBrowser.removeTab(tab, { animate: true }); });
+    r.addEventListener('contextmenu', (e) => e.preventDefault());
     return r;
   }
 
   function show(tab) {
     const tabs = tabsFor(tab);
-    if (!peek.hidden && !peek.classList.contains('closing') && tabs.length === shown.length && tabs.every((t, i) => t === shown[i])) return;
+    const open = !peek.hidden && !peek.classList.contains('closing');
+    if (open && tabs.length === shown.length && tabs.every((t, i) => t === shown[i])) return;
     shown = tabs;
 
-    const rects = tabs.map((t) => t.getBoundingClientRect());
-    const top = Math.min(...rects.map((r) => r.top));
-    const left = Math.min(...rects.map((r) => r.left));
-    const iconWidth = Math.max(...rects.map((r) => r.width));
+    const looks = tabs.map(lookOf);
+    const top = Math.min(...looks.map((l) => l.rect.top));
+    const right = Math.max(...looks.map((l) => l.rect.right));
     let prevBottom = top;
     peek.replaceChildren(...tabs.map((t, i) => {
-      const r = row(t, rects[i], rects[i].top - prevBottom, iconWidth);
-      prevBottom = rects[i].bottom;
+      const r = row(t, looks[i], looks[i].rect.top - prevBottom);
+      prevBottom = looks[i].rect.bottom;
       return r;
     }));
-    peek.classList.toggle('group', tabs.length > 1);
-    peek.style.setProperty('--peek-icon', iconWidth + 'px');
 
-    const wasOpen = !peek.hidden && !peek.classList.contains('closing');
-    const from = wasOpen ? peek.getBoundingClientRect().width : iconWidth;
+    const from = open ? peek.getBoundingClientRect().width : 0;
     peek.hidden = false;
     peek.classList.remove('closing');
-    peek.style.left = left + 'px';
+    peek.style.left = right + GAP + 'px';
     peek.style.top = top + 'px';
     peek.style.width = 'max-content';
     const to = peek.getBoundingClientRect().width;
     peek.style.width = from + 'px';
     peek.getBoundingClientRect(); // commit the start width so the change animates
     peek.style.width = to + 'px';
-    peek.dataset.iconWidth = iconWidth;
   }
 
   function hide(now = false) {
@@ -87,10 +164,10 @@
     if (peek.hidden) return;
     if (now) { peek.hidden = true; shown = []; return; }
     peek.classList.add('closing');
-    peek.style.width = peek.dataset.iconWidth + 'px';
+    peek.style.width = '0px';
     hideTimer = setTimeout(() => { peek.hidden = true; peek.classList.remove('closing'); shown = []; }, 180);
   }
-  const hideSoon = () => { clearTimeout(hideTimer); hideTimer = setTimeout(hide, 140); };
+  const hideSoon = () => { clearTimeout(hideTimer); hideTimer = setTimeout(hide, 160); };
 
   window.addEventListener('mouseover', (e) => {
     if (peek.contains(e.target)) return clearTimeout(hideTimer);
@@ -106,10 +183,13 @@
   // Anything that moves or changes the tabs under the pill makes it stale.
   for (const type of ['wheel', 'dragstart', 'resize']) window.addEventListener(type, () => hide(true), true);
   for (const type of ['TabClose', 'TabMove']) gBrowser.tabContainer.addEventListener(type, () => hide(true));
-  // Title, icon or selection changed: redraw in place.
-  for (const type of ['TabSelect', 'TabAttrModified']) gBrowser.tabContainer.addEventListener(type, (e) => {
+  // Title changes update in place; a new selection restyles the rows.
+  gBrowser.tabContainer.addEventListener('TabAttrModified', (e) => {
+    const i = shown.indexOf(e.target);
+    if (i >= 0 && peek.children[i]) peek.children[i].firstChild.textContent = e.target.label;
+  });
+  gBrowser.tabContainer.addEventListener('TabSelect', () => {
     if (peek.hidden || peek.classList.contains('closing')) return;
-    if (type === 'TabAttrModified' && !shown.includes(e.target)) return;
     const first = shown[0];
     shown = [];
     show(first);

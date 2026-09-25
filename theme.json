@@ -1,8 +1,8 @@
 {
   "id": "zen-clipboard-newtab",
   "name": "Tab Tweaks",
-  "description": "Right-click the new tab button to open the clipboard in a new tab; double-click any tab to close it; in the collapsed sidebar, hovering a tab unfolds its title (split views and folders unfold whole). Each can be turned on or off in the mod settings.",
-  "version": "1.2.1",
+  "description": "Right-click the new tab button to open the clipboard in a new tab; double-click any tab to close it; in the collapsed sidebar, hovering a tab slides its title out beside it in the tab's own style (split views and folders slide out whole). Each can be turned on or off in the mod settings.",
+  "version": "1.3.0",
   "author": "dvgmdvgm",
   "tags": [
     "tabs",
@@ -22,7 +22,7 @@
     },
     "JS/tab-peek.uc.js": {
       "name": "Tab Peek",
-      "description": "Unfolds the hovered tab in the collapsed sidebar.",
+      "description": "Slides the hovered tab title out in the collapsed sidebar, styled like the tab.",
       "include": [
         "chrome://browser/content/browser.xhtml"
       ]

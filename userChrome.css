@@ -1,63 +1,36 @@
-/* Tab Peek: the pill that unfolds from a tab in the collapsed sidebar. */
+/* Tab Peek: the pill that slides out beside a tab in the collapsed sidebar.
+   Colors, border, radius, height and font are copied from the tab at hover time (tab-peek.uc.js);
+   only layout and motion live here. */
 #zen-tab-peek {
   position: fixed;
   z-index: 10000;
-  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 28px 28px 0; /* room for the drop shadow inside the clipping box */
   overflow: hidden;
   pointer-events: none;
   opacity: 1;
   transition: width .2s cubic-bezier(.2, .9, .3, 1), top .14s ease, opacity .16s ease;
-  font: menu;
-  color: var(--toolbox-textcolor, #ececf0);
 
   &[hidden] { display: none; }
   &.closing { opacity: 0; }
-
-  /* The pill's fill starts after the icon column, so the real tab shows through there. */
-  --peek-fill: linear-gradient(to right, transparent var(--peek-icon), var(--zen-colors-tertiary, #202024) var(--peek-icon));
-
-  /* A split view or folder unfolds as one framed box. */
-  &.group {
-    background: var(--peek-fill);
-    border: 1.5px solid var(--zen-primary-color, #f4b77a);
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
-    box-sizing: border-box;
-  }
 }
 
 .peek-row {
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  pointer-events: none;
-  white-space: nowrap;
-
-  #zen-tab-peek:not(.group) & {
-    background: var(--peek-fill);
-    border: 1.5px solid color-mix(in srgb, var(--zen-primary-color, #f4b77a) 55%, transparent);
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
-  }
-  #zen-tab-peek:not(.group) &[selected] { border-color: var(--zen-primary-color, #f4b77a); }
-  #zen-tab-peek.group &[selected] .peek-label { color: var(--zen-primary-color, #f4b77a); }
-}
-
-.peek-icon {
   flex: none;
   display: flex;
   align-items: center;
-  justify-content: center;
-  align-self: stretch;
+  box-sizing: border-box;
+  max-width: 320px;
+  padding: 0 12px;
+  pointer-events: auto;
+  cursor: default;
 }
 
-.peek-label {
-  pointer-events: auto;
-  flex: 1;
+.peek-text {
   min-width: 0;
-  max-width: 260px;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
-  padding: 0 12px 0 6px;
-  font-size: 13px;
 }
