@@ -47,12 +47,24 @@
     return matchMedia('(prefers-color-scheme: dark)').matches ? [31, 31, 35, 1] : [245, 245, 247, 1];
   }
 
+  // Themes fade a tab's hover border and glow in (Neo Zen: ~0.6s). Read where a running transition is
+  // heading, not where it is, so the pill shows the finished look at once and the tab keeps its fade.
+  const KEYFRAME_META = new Set(['offset', 'computedOffset', 'easing', 'composite']);
+  function endStyle(el) {
+    const s = getComputedStyle(el);
+    const end = {};
+    for (const a of el.getAnimations()) {
+      for (const [k, v] of Object.entries(a.effect?.getKeyframes().at(-1) || {})) if (!KEYFRAME_META.has(k)) end[k] = v;
+    }
+    return new Proxy(s, { get: (t, k) => (k in end ? end[k] : t[k]) });
+  }
+
   // The pill floats over web content, so it needs a solid fill: stack the tab's (often translucent)
   // background over its ancestors' until the result is opaque.
   function solidBackground(el) {
     const layers = [];
     for (let e = el; e; e = e.parentElement) {
-      const c = rgba(getComputedStyle(e).backgroundColor);
+      const c = rgba(endStyle(e).backgroundColor);
       if (c[3] > 0) layers.push(c);
       if (c[3] >= 0.99) break;
     }
@@ -87,8 +99,8 @@
 
   // bg is what draws the tab on screen: its .tab-background, or a split view's shared container.
   function lookOf(bg, tab) {
-    const s = getComputedStyle(bg);
-    const label = getComputedStyle(tab.querySelector('.tab-label') || tab);
+    const s = endStyle(bg);
+    const label = endStyle(tab.querySelector('.tab-label') || tab);
     const visible = (style, width, color) => style !== 'none' && parseFloat(width) > 0 && rgba(color)[3] > 0;
     let border = `1px solid color-mix(in srgb, ${label.color} 22%, transparent)`;
     if (visible(s.borderTopStyle, s.borderTopWidth, s.borderTopColor)) border = `${s.borderTopWidth} solid ${s.borderTopColor}`;
@@ -145,18 +157,6 @@
     return look;
   }
 
-  // Themes fade a tab's hover border and glow in (Neo Zen: ~0.6s), and the pill is styled at the
-  // first moment of hover; restyle the tab's row once its transitions finish. An interrupted fade
-  // is skipped, and so is a restyle while the pointer is on the pill (the tab under it has lost :hover).
-  function settle(tab) {
-    const anims = tab ? bgOf(tab).getAnimations() : [];
-    if (!anims.length) return;
-    Promise.all(anims.map((a) => a.finished)).then(() => {
-      const i = units.findIndex((u) => u.tabs.includes(tab));
-      if (i < 0 || peek.hidden || peek.matches(':hover')) return;
-      Object.assign(peek.children[i].style, lookFor(units[i]).css);
-    }, () => {});
-  }
 
   // Themes give tabs radii far above their height (Neo Zen: 50px), which a tab clips to a full round
   // end; a split pill is taller, so clip the radius the way a single tab row shows it.
@@ -197,15 +197,14 @@
     const prev = hovered;
     hovered = tab;
     if (open && tabs.length === shown.length && tabs.every((t, i) => t === shown[i])) {
-      // Same pill, another tab in it: the old row loses its hover look, the new one gains it.
-      if (prev !== tab) { settle(prev); settle(tab); }
+      // Same pill, another tab in it: the hover look moves rows (the pill's CSS fades it across).
+      if (prev !== tab) units.forEach((u, i) => Object.assign(peek.children[i].style, lookFor(u).css));
       return;
     }
     shown = tabs;
 
     units = unitsOf(tabs);
     const looks = units.map(lookFor);
-    settle(tab);
     const top = Math.min(...looks.map((l) => l.rect.top));
     const right = Math.max(...units.map((u, i) => rightEdge(u, looks[i].rect)));
     let prevBottom = top;
