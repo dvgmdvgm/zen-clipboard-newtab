@@ -1,8 +1,8 @@
 {
   "id": "zen-clipboard-newtab",
   "name": "Tab Tweaks",
-  "description": "Right-click the new tab button to open the clipboard in a new tab; double-click any tab to close it; in the collapsed sidebar, hovering a tab slides its title out beside it in the tab's own style (split views and folders slide out whole); press and hold the reload button for normal reload, hard reload, or empty cache and hard reload. Each can be turned on or off in the mod settings.",
-  "version": "1.4.0",
+  "description": "Right-click the new tab button to open the clipboard in a new tab; double-click any tab to close it; in the collapsed sidebar, hovering a tab slides its title out beside it in the tab's own style (split views and folders slide out whole); press and hold the reload button for normal reload, hard reload, or empty cache and hard reload; adds a Reopen closed tab button to Customize Toolbar. Each can be turned on or off in the mod settings.",
+  "version": "1.5.0",
   "author": "dvgmdvgm",
   "tags": [
     "tabs",
@@ -30,6 +30,13 @@
     "JS/reload-menu.uc.js": {
       "name": "Reload Menu",
       "description": "Press and hold the reload button: normal reload, hard reload, empty cache and hard reload.",
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ]
+    },
+    "JS/reopen-tab-button.uc.js": {
+      "name": "Reopen Tab Button",
+      "description": "A Reopen closed tab button for the toolbar (Customize Toolbar).",
       "include": [
         "chrome://browser/content/browser.xhtml"
       ]
