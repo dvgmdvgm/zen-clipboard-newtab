@@ -6,7 +6,7 @@ Four tweaks, each with its own on/off switch in the mod settings (Sine → Tab T
 - **Double-click any tab** → it closes (active or not). The close, audio and icon buttons keep their own behaviour. While this is on, Zen's rename-on-double-click is replaced; rename from the tab context menu instead.
 - **Collapsed sidebar: hover a tab** → its title slides out in a pill beside it. A split view or a folder slides out whole. Click a title to switch to that tab, middle-click it to close. The pill never covers the tab, so Zen's own close button, dragging and the right-click menu stay as they are. Its look is read from the tab at hover time — background, border, corner radius, height, font and text color — so it follows whatever theme or mods you use; translucent tabs are blended into a solid fill, with a readable fallback from the theme.
 - **Press and hold the reload button** → a menu, as in Chrome: *Normal reload* (Ctrl+R), *Hard reload* (Ctrl+Shift+R, bypasses the cache), *Empty cache and hard reload* (clears the browser's whole cache, then hard-reloads). A plain click still reloads as before.
-- **Reopen closed tab button** → right-click the toolbar → Customize Toolbar, drag *Reopen closed tab* where you want it. A click reopens the last closed tab, like Ctrl+Shift+T. To hide it, drag it back to the palette.
+- **Reopen closed tab button** → right-click the toolbar → Customize Toolbar, drag *Reopen closed tab* where you want it. A click does exactly what Ctrl+Shift+T does: reopens the last closed tab (or window). To hide it, drag it back to the palette.
 
 Works with `#tabs-newtab-button`, `#vertical-tabs-newtab-button` and `#new-tab-button` (Zen 1.22).
 

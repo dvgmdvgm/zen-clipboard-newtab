@@ -14,6 +14,7 @@
     label: 'Reopen closed tab',
     tooltiptext: 'Reopen closed tab (Ctrl+Shift+T)',
     onCreated: (node) => { node.style.listStyleImage = 'url("chrome://global/skin/icons/undo.svg")'; },
-    onCommand: (e) => e.target.ownerGlobal.SessionWindowUI.undoCloseTab(e.target.ownerGlobal),
+    // The Ctrl+Shift+T command: finds the window the tab was closed in (undoCloseTab(window) only looks at the current one).
+    onCommand: (e) => e.target.ownerDocument.getElementById('History:RestoreLastClosedTabOrWindowOrSession').doCommand(),
   });
 })();
