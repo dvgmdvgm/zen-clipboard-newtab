@@ -121,15 +121,30 @@
   }
 
   // One pill per thing Zen draws as one tab: a lone tab, or a whole split view (one shared container).
+  // A split pill spans the container but wears a tab's own background, where themes put their
+  // border and glow: the selected tab's, else the first's.
+  const bgOf = (tab) => tab.querySelector('.tab-background') || tab;
   function unitsOf(tabs) {
     const units = [];
     for (const tab of tabs) {
       const split = tab.group?.hasAttribute('split-view-group') ? tab.group : null;
       const last = units.at(-1);
-      if (split && last?.split === split) { last.tabs.push(tab); continue; }
-      units.push({ split, tabs: [tab], bg: split?.groupContainer || tab.querySelector('.tab-background') || tab });
+      if (split && last?.split === split) {
+        last.tabs.push(tab);
+        if (tab.selected) last.face = bgOf(tab);
+        continue;
+      }
+      units.push({ split, tabs: [tab], face: bgOf(tab), box: split?.groupContainer });
     }
     return units;
+  }
+
+  // Themes give tabs radii far above their height (Neo Zen: 50px), which a tab clips to a full round
+  // end; a split pill is taller, so clip the radius the way a single tab row shows it.
+  function tabRadius(face) {
+    const lone = [...gBrowser.tabContainer.querySelectorAll('.tabbrowser-tab:not([zen-essential], tab-group[split-view-group] *) .tab-background')]
+      .find((e) => e.getBoundingClientRect().height > 0) || face;
+    return Math.min(parseFloat(getComputedStyle(lone).borderTopLeftRadius) || 0, lone.getBoundingClientRect().height / 2) + 'px';
   }
 
   // Tabs inside a folder or split view are boxed differently from a lone tab (a split's inner tab
@@ -164,10 +179,14 @@
     shown = tabs;
 
     const units = unitsOf(tabs);
-    const looks = units.map((u) => lookOf(u.bg, u.tabs[0]));
-    // A split container is rounder than a tab; round its pill like a lone tab when one is around.
-    const lone = gBrowser.tabContainer.querySelector('.tabbrowser-tab:not([zen-essential], tab-group[split-view-group] *) .tab-background');
-    if (lone) units.forEach((u, i) => { if (u.split) looks[i].css.borderRadius = getComputedStyle(lone).borderRadius; });
+    const looks = units.map((u) => {
+      const look = lookOf(u.face, u.tabs[0]);
+      if (u.box) {
+        look.rect = u.box.getBoundingClientRect();
+        look.css.borderRadius = tabRadius(u.face);
+      }
+      return look;
+    });
     const top = Math.min(...looks.map((l) => l.rect.top));
     const right = Math.max(...units.map((u, i) => rightEdge(u, looks[i].rect)));
     let prevBottom = top;
