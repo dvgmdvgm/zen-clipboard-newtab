@@ -1,10 +1,12 @@
 # Tab Tweaks — Sine mod for Zen Browser
 
-Four tweaks, each with its own on/off switch in the mod settings (Sine → Tab Tweaks → settings), plus a toolbar button. Switching applies immediately.
+Six tweaks, each with its own on/off switch in the mod settings (Sine → Tab Tweaks → settings), plus a toolbar button. Switching applies immediately.
 
 - **Right-click the new tab button** → a new tab opens with the clipboard: a URL opens directly, other text is searched with your default engine (the private-window engine in private windows). Empty clipboard or Shift+right-click shows the usual menu.
 - **Double-click any tab** → it closes (active or not). The close, audio and icon buttons keep their own behaviour. While this is on, Zen's rename-on-double-click is replaced; rename from the tab context menu instead.
 - **Collapsed sidebar: hover a tab** → its title slides out in a pill beside it. A split view or a folder slides out whole. Click a title to switch to that tab, middle-click it to close. The pill never covers the tab, so Zen's own close button, dragging and the right-click menu stay as they are. Its look is read from the tab at hover time — background, border, corner radius, height, font and text color — so it follows whatever theme or mods you use; translucent tabs are blended into a solid fill, with a readable fallback from the theme.
+- **Collapsed sidebar: media player** → Zen hides its media controls when the sidebar is collapsed; with this on, the playing tab's icon stays at the bottom of the sidebar instead. It pulses while sound plays and dims when paused. Hover it and Zen's own player card unfolds beside it — title, progress, previous / play-pause / next, mute, picture-in-picture. Several playing tabs: the newest is shown.
+- **Right-click the menu button** → Settings opens, as in Chrome. Shift+right-click shows the usual toolbar menu.
 - **Press and hold the reload button** → a menu, as in Chrome: *Normal reload* (Ctrl+R), *Hard reload* (Ctrl+Shift+R, bypasses the cache), *Empty cache and hard reload* (clears the browser's whole cache, then hard-reloads). A plain click still reloads as before.
 - **Reopen closed tab button** → right-click the toolbar → Customize Toolbar, drag *Reopen closed tab* where you want it. A click does exactly what Ctrl+Shift+T does: reopens the last closed tab (or window). To hide it, drag it back to the palette.
 

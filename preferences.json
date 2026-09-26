@@ -22,5 +22,17 @@
     "property": "zen-clipboard-newtab.reload-menu",
     "label": "Press and hold the reload button for more reload options",
     "defaultValue": true
+  },
+  {
+    "type": "checkbox",
+    "property": "zen-clipboard-newtab.media-mini",
+    "label": "Collapsed sidebar: show the media player as its source icon, hover it for the controls",
+    "defaultValue": true
+  },
+  {
+    "type": "checkbox",
+    "property": "zen-clipboard-newtab.menu-rmb-settings",
+    "label": "Right-click the menu button to open Settings",
+    "defaultValue": true
   }
 ]

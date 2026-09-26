@@ -25,6 +25,14 @@
     openTrustedLinkIn(text, 'tab', { allowThirdPartyFixup: true });
   }, true);
 
+  // Right-click the Zen menu button opens Settings, as in Chrome; Shift+right-click keeps the toolbar menu.
+  window.addEventListener('contextmenu', (e) => {
+    if (e.shiftKey || !e.target.closest?.('#PanelUI-menu-button') || !on('menu-rmb-settings')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openPreferences();
+  }, true);
+
   // Captured on the window, so it runs before the tab's own handler and Zen's rename-on-double-click.
   const SKIP = '.tab-close-button, .tab-icon-overlay, .tab-audio-button, .tab-reset-button, .tab-reset-pin-button, input';
   window.addEventListener('dblclick', (e) => {
