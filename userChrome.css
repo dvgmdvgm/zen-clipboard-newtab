@@ -48,40 +48,39 @@
 }
 
 /* Mini player: Zen hides its media card in the collapsed sidebar. Show the card's source icon instead
-   and unfold Zen's own card beside it on hover, so its look and live controls stay Zen's. */
-@media -moz-pref("zen-clipboard-newtab.media-mini") {
-  :root:not([zen-sidebar-expanded="true"]) {
-    /* The sidebar paints under the web page; lift it while the card is open so the card lands on top. */
-    #navigator-toolbox:has(#zen-media-controls-toolbar:hover) { z-index: 4; }
+   and unfold Zen's own card beside it on hover, so its look and live controls stay Zen's.
+   tab-tweaks-media-mini is the mod switch, set by media-mini.uc.js. */
+:root[tab-tweaks-media-mini]:not([zen-sidebar-expanded="true"]) {
+  /* The sidebar paints under the web page; lift it while the card is open so the card lands on top. */
+  #navigator-toolbox:has(#zen-media-controls-toolbar:hover) { z-index: 4; }
 
-    #zen-media-controls-toolbar:not([hidden]) {
-      display: flex;
-      height: var(--zen-media-collapsed-height, 2.5rem); /* keeps the slot while the card floats out */
-      container-type: normal; /* a size container would trap the floating card inside the sidebar */
-      anchor-name: --tab-tweaks-media;
+  #zen-media-controls-toolbar:not([hidden]) {
+    display: flex;
+    height: var(--zen-media-collapsed-height, 2.5rem); /* keeps the slot while the card floats out */
+    container-type: normal; /* a size container would trap the floating card inside the sidebar */
+    anchor-name: --tab-tweaks-media;
 
-      & .zen-media-card[stacked-behind] { display: none; }
-      /* Zen drops the icon from narrow cards; here the icon is the whole card. */
-      & .zen-media-controls-hbox { container-type: normal; justify-content: center; }
-      &:not(:hover) :is(.zen-media-playback-buttons, .zen-media-mute-button, .media-device-buttons) { display: none; }
+    & .zen-media-card[stacked-behind] { display: none; }
+    /* Zen drops the icon from narrow cards; here the icon is the whole card. */
+    & .zen-media-controls-hbox { container-type: normal; justify-content: center; }
+    &:not(:hover) :is(.zen-media-playback-buttons, .zen-media-mute-button, .media-device-buttons) { display: none; }
 
-      & .zen-media-focus-button .toolbarbutton-icon { transition: opacity .3s ease; }
-      & .zen-media-card:not(.playing, [media-sharing]) .zen-media-focus-button .toolbarbutton-icon { opacity: .55; }
-      & .zen-media-card.playing:not([muted]) .zen-media-focus-button .toolbarbutton-icon {
-        animation: tab-tweaks-media-beat .9s ease-in-out infinite alternate;
+    & .zen-media-focus-button .toolbarbutton-icon { transition: opacity .3s ease; }
+    & .zen-media-card:not(.playing, [media-sharing]) .zen-media-focus-button .toolbarbutton-icon { opacity: .55; }
+    & .zen-media-card.playing:not([muted]) .zen-media-focus-button .toolbarbutton-icon {
+      animation: tab-tweaks-media-beat .9s ease-in-out infinite alternate;
+    }
+
+    &:hover {
+      & .zen-media-card:not([stacked-behind]) {
+        position: fixed;
+        position-anchor: --tab-tweaks-media;
+        left: anchor(left);
+        bottom: anchor(bottom);
+        width: 16em;
+        animation: tab-tweaks-media-unfold .25s cubic-bezier(.2, .9, .3, 1);
       }
-
-      &:hover {
-        & .zen-media-card:not([stacked-behind]) {
-          position: fixed;
-          position-anchor: --tab-tweaks-media;
-          left: anchor(left);
-          bottom: anchor(bottom);
-          width: 16em;
-          animation: tab-tweaks-media-unfold .25s cubic-bezier(.2, .9, .3, 1);
-        }
-        & .zen-media-controls-hbox { justify-content: space-between; }
-      }
+      & .zen-media-controls-hbox { justify-content: space-between; }
     }
   }
 }
