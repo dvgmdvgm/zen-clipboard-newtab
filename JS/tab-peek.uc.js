@@ -85,8 +85,8 @@
   }
   const css = ([r, g, b]) => `rgb(${r}, ${g}, ${b})`;
 
-  function lookOf(tab) {
-    const bg = tab.querySelector('.tab-background') || tab;
+  // bg is what draws the tab on screen: its .tab-background, or a split view's shared container.
+  function lookOf(bg, tab) {
     const s = getComputedStyle(bg);
     const label = getComputedStyle(tab.querySelector('.tab-label') || tab);
     const visible = (style, width, color) => style !== 'none' && parseFloat(width) > 0 && rgba(color)[3] > 0;
@@ -112,6 +112,7 @@
   // ---- The pill ----
 
   let shown = [], hideTimer = 0;
+  const texts = new Map(); // tab -> its title span in the pill
 
   // A split view or a folder slides out whole; collapsed folder children have no height and are skipped.
   function tabsFor(tab) {
@@ -119,16 +120,41 @@
     return list.length ? list : [tab];
   }
 
-  function row(tab, look, gap) {
-    const r = make('div', 'peek-row');
-    Object.assign(r.style, look.css, { height: look.rect.height + 'px', marginTop: gap + 'px' });
+  // One pill per thing Zen draws as one tab: a lone tab, or a whole split view (one shared container).
+  function unitsOf(tabs) {
+    const units = [];
+    for (const tab of tabs) {
+      const split = tab.group?.hasAttribute('split-view-group') ? tab.group : null;
+      const last = units.at(-1);
+      if (split && last?.split === split) { last.tabs.push(tab); continue; }
+      units.push({ split, tabs: [tab], bg: split?.groupContainer || tab.querySelector('.tab-background') || tab });
+    }
+    return units;
+  }
+
+  // Tabs inside a folder or split view are boxed differently from a lone tab (a split's inner tab
+  // backgrounds are inset in a shared container), so line pills up on the sidebar column instead:
+  // the outermost folder/group box sits where a lone tab does, centred the same way.
+  function rightEdge(unit, rect) {
+    let outer = null;
+    for (let e = unit.tabs[0].parentElement; e && e !== gBrowser.tabContainer; e = e.parentElement) {
+      if (e.matches('tab-group, zen-folder')) outer = e;
+    }
+    if (!outer) return rect.right;
+    const o = outer.getBoundingClientRect();
+    return o.left + o.width / 2 + rect.width / 2;
+  }
+
+  function line(tab) {
+    const l = make('div', 'peek-line');
     const text = make('span', 'peek-text');
     text.textContent = tab.label;
-    r.append(text);
-    r.addEventListener('click', () => { gBrowser.selectedTab = tab; });
-    r.addEventListener('auxclick', (e) => { if (e.button === 1) gBrowser.removeTab(tab, { animate: true }); });
-    r.addEventListener('contextmenu', (e) => e.preventDefault());
-    return r;
+    texts.set(tab, text);
+    l.append(text);
+    l.addEventListener('click', () => { gBrowser.selectedTab = tab; });
+    l.addEventListener('auxclick', (e) => { if (e.button === 1) gBrowser.removeTab(tab, { animate: true }); });
+    l.addEventListener('contextmenu', (e) => e.preventDefault());
+    return l;
   }
 
   function show(tab) {
@@ -137,13 +163,18 @@
     if (open && tabs.length === shown.length && tabs.every((t, i) => t === shown[i])) return;
     shown = tabs;
 
-    const looks = tabs.map(lookOf);
+    const units = unitsOf(tabs);
+    const looks = units.map((u) => lookOf(u.bg, u.tabs[0]));
     const top = Math.min(...looks.map((l) => l.rect.top));
-    const right = Math.max(...looks.map((l) => l.rect.right));
+    const right = Math.max(...units.map((u, i) => rightEdge(u, looks[i].rect)));
     let prevBottom = top;
-    peek.replaceChildren(...tabs.map((t, i) => {
-      const r = row(t, looks[i], looks[i].rect.top - prevBottom);
-      prevBottom = looks[i].rect.bottom;
+    texts.clear();
+    peek.replaceChildren(...units.map((u, i) => {
+      const { rect, css } = looks[i];
+      const r = make('div', 'peek-row');
+      Object.assign(r.style, css, { height: rect.height + 'px', marginTop: rect.top - prevBottom + 'px' });
+      r.append(...u.tabs.map(line));
+      prevBottom = rect.bottom;
       return r;
     }));
 
@@ -185,8 +216,8 @@
   for (const type of ['TabClose', 'TabMove']) gBrowser.tabContainer.addEventListener(type, () => hide(true));
   // Title changes update in place; a new selection restyles the rows.
   gBrowser.tabContainer.addEventListener('TabAttrModified', (e) => {
-    const i = shown.indexOf(e.target);
-    if (i >= 0 && peek.children[i]) peek.children[i].firstChild.textContent = e.target.label;
+    const text = texts.get(e.target);
+    if (text) text.textContent = e.target.label;
   });
   gBrowser.tabContainer.addEventListener('TabSelect', () => {
     if (peek.hidden || peek.classList.contains('closing')) return;

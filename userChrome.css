@@ -17,15 +17,26 @@
   &.closing { opacity: 0; }
 }
 
+/* One row per drawn tab; a split view is one row holding a line per tab, split like Zen's own divider. */
 .peek-row {
   flex: none;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   box-sizing: border-box;
   max-width: 320px;
+  overflow: hidden;
+}
+
+.peek-line {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  min-height: 0;
   padding: 0 12px;
   pointer-events: auto;
   cursor: default;
+
+  & + & { border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent); }
 }
 
 .peek-text {
