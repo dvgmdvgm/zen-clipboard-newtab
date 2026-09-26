@@ -111,7 +111,7 @@
 
   // ---- The pill ----
 
-  let shown = [], hideTimer = 0;
+  let shown = [], units = [], hovered = null, hideTimer = 0;
   const texts = new Map(); // tab -> its title span in the pill
 
   // A split view or a folder slides out whole; collapsed folder children have no height and are skipped.
@@ -121,22 +121,41 @@
   }
 
   // One pill per thing Zen draws as one tab: a lone tab, or a whole split view (one shared container).
-  // A split pill spans the container but wears a tab's own background, where themes put their
-  // border and glow: the selected tab's, else the first's.
-  const bgOf = (tab) => tab.querySelector('.tab-background') || tab;
   function unitsOf(tabs) {
     const units = [];
     for (const tab of tabs) {
       const split = tab.group?.hasAttribute('split-view-group') ? tab.group : null;
       const last = units.at(-1);
-      if (split && last?.split === split) {
-        last.tabs.push(tab);
-        if (tab.selected) last.face = bgOf(tab);
-        continue;
-      }
-      units.push({ split, tabs: [tab], face: bgOf(tab), box: split?.groupContainer });
+      if (split && last?.split === split) last.tabs.push(tab);
+      else units.push({ split, tabs: [tab], box: split?.groupContainer });
     }
     return units;
+  }
+
+  // A split pill spans the container but wears a tab's own background, where themes put their
+  // border and glow: the hovered tab's, else the selected one's, else the first's.
+  const bgOf = (tab) => tab.querySelector('.tab-background') || tab;
+  function lookFor(unit) {
+    const tab = unit.tabs.find((t) => t === hovered) || unit.tabs.find((t) => t.selected) || unit.tabs[0];
+    const look = lookOf(bgOf(tab), tab);
+    if (unit.box) {
+      look.rect = unit.box.getBoundingClientRect();
+      look.css.borderRadius = tabRadius(bgOf(tab));
+    }
+    return look;
+  }
+
+  // Themes fade a tab's hover border and glow in (Neo Zen: ~0.6s), and the pill is styled at the
+  // first moment of hover; restyle the tab's row once its transitions finish. An interrupted fade
+  // is skipped, and so is a restyle while the pointer is on the pill (the tab under it has lost :hover).
+  function settle(tab) {
+    const anims = tab ? bgOf(tab).getAnimations() : [];
+    if (!anims.length) return;
+    Promise.all(anims.map((a) => a.finished)).then(() => {
+      const i = units.findIndex((u) => u.tabs.includes(tab));
+      if (i < 0 || peek.hidden || peek.matches(':hover')) return;
+      Object.assign(peek.children[i].style, lookFor(units[i]).css);
+    }, () => {});
   }
 
   // Themes give tabs radii far above their height (Neo Zen: 50px), which a tab clips to a full round
@@ -175,18 +194,18 @@
   function show(tab) {
     const tabs = tabsFor(tab);
     const open = !peek.hidden && !peek.classList.contains('closing');
-    if (open && tabs.length === shown.length && tabs.every((t, i) => t === shown[i])) return;
+    const prev = hovered;
+    hovered = tab;
+    if (open && tabs.length === shown.length && tabs.every((t, i) => t === shown[i])) {
+      // Same pill, another tab in it: the old row loses its hover look, the new one gains it.
+      if (prev !== tab) { settle(prev); settle(tab); }
+      return;
+    }
     shown = tabs;
 
-    const units = unitsOf(tabs);
-    const looks = units.map((u) => {
-      const look = lookOf(u.face, u.tabs[0]);
-      if (u.box) {
-        look.rect = u.box.getBoundingClientRect();
-        look.css.borderRadius = tabRadius(u.face);
-      }
-      return look;
-    });
+    units = unitsOf(tabs);
+    const looks = units.map(lookFor);
+    settle(tab);
     const top = Math.min(...looks.map((l) => l.rect.top));
     const right = Math.max(...units.map((u, i) => rightEdge(u, looks[i].rect)));
     let prevBottom = top;
@@ -243,8 +262,7 @@
   });
   gBrowser.tabContainer.addEventListener('TabSelect', () => {
     if (peek.hidden || peek.classList.contains('closing')) return;
-    const first = shown[0];
     shown = [];
-    show(first);
+    show(hovered);
   });
 })();
