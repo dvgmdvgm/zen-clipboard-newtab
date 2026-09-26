@@ -165,6 +165,9 @@
 
     const units = unitsOf(tabs);
     const looks = units.map((u) => lookOf(u.bg, u.tabs[0]));
+    // A split container is rounder than a tab; round its pill like a lone tab when one is around.
+    const lone = gBrowser.tabContainer.querySelector('.tabbrowser-tab:not([zen-essential], tab-group[split-view-group] *) .tab-background');
+    if (lone) units.forEach((u, i) => { if (u.split) looks[i].css.borderRadius = getComputedStyle(lone).borderRadius; });
     const top = Math.min(...looks.map((l) => l.rect.top));
     const right = Math.max(...units.map((u, i) => rightEdge(u, looks[i].rect)));
     let prevBottom = top;
