@@ -18,6 +18,14 @@
     return e;
   };
 
+  // Mini media player switch (userChrome.css): Sine loads mod CSS from file://, where -moz-pref() media
+  // queries don't apply, so the pref travels as a root attribute and follows the setting live.
+  const MINI = 'zen-clipboard-newtab.media-mini';
+  const syncMini = () => document.documentElement.toggleAttribute('tab-tweaks-media-mini', Services.prefs.getBoolPref(MINI, true));
+  syncMini();
+  Services.prefs.addObserver(MINI, syncMini);
+  window.addEventListener('unload', () => Services.prefs.removeObserver(MINI, syncMini));
+
   const peek = make('div');
   peek.id = 'zen-tab-peek';
   peek.hidden = true;

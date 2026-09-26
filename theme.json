@@ -2,7 +2,7 @@
   "id": "zen-clipboard-newtab",
   "name": "Tab Tweaks",
   "description": "Right-click the new tab button to open the clipboard in a new tab; double-click any tab to close it; in the collapsed sidebar, hovering a tab slides its title out beside it in the tab's own style (split views and folders slide out whole); in the collapsed sidebar, the media player shrinks to its source icon and unfolds beside it on hover; right-click the menu button to open Settings; press and hold the reload button for normal reload, hard reload, or empty cache and hard reload; adds a Reopen closed tab button to Customize Toolbar. Each can be turned on or off in the mod settings.",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "author": "dvgmdvgm",
   "tags": [
     "tabs",
@@ -22,7 +22,7 @@
     },
     "JS/tab-peek.uc.js": {
       "name": "Tab Peek",
-      "description": "Slides the hovered tab title out in the collapsed sidebar, styled like the tab.",
+      "description": "Collapsed sidebar: slides the hovered tab title out, styled like the tab; switches the mini media player on.",
       "include": [
         "chrome://browser/content/browser.xhtml"
       ]
@@ -37,13 +37,6 @@
     "JS/reopen-tab-button.uc.js": {
       "name": "Reopen Tab Button",
       "description": "A Reopen closed tab button for the toolbar (Customize Toolbar).",
-      "include": [
-        "chrome://browser/content/browser.xhtml"
-      ]
-    },
-    "JS/media-mini.uc.js": {
-      "name": "Mini Media Player",
-      "description": "Collapsed sidebar: the media player as its source icon, unfolding on hover.",
       "include": [
         "chrome://browser/content/browser.xhtml"
       ]

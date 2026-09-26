@@ -49,7 +49,7 @@
 
 /* Mini player: Zen hides its media card in the collapsed sidebar. Show the card's source icon instead
    and unfold Zen's own card beside it on hover, so its look and live controls stay Zen's.
-   tab-tweaks-media-mini is the mod switch, set by media-mini.uc.js. */
+   tab-tweaks-media-mini is the mod switch, set by tab-peek.uc.js. */
 :root[tab-tweaks-media-mini]:not([zen-sidebar-expanded="true"]) {
   /* The sidebar paints under the web page; lift it while the card is open so the card lands on top. */
   #navigator-toolbox:has(#zen-media-controls-toolbar:hover) { z-index: 4; }
